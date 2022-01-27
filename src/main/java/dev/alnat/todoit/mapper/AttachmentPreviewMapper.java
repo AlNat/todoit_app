@@ -1,7 +1,7 @@
 package dev.alnat.todoit.mapper;
 
-import dev.alnat.todoit.model.Task;
-import dev.alnat.todoit.types.TaskDTO;
+import dev.alnat.todoit.model.Attachment;
+import dev.alnat.todoit.types.AttachmentPreview;
 import org.mapstruct.Mapper;
 
 import java.util.List;
@@ -11,10 +11,7 @@ import java.util.List;
  * Licensed by Apache License, Version 2.0
  */
 @Mapper(componentModel = "spring")
-public interface TaskDTOToTaskMapper {
+public interface AttachmentPreviewMapper extends EntityMapper<Attachment, AttachmentPreview> {
 
-    Task toTask(TaskDTO task);
-
-    List<Task> toTaskList(List<TaskDTO> taskList);
 
 }

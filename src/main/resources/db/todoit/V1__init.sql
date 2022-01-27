@@ -45,9 +45,10 @@ CREATE TABLE IF NOT EXISTS todoit.task
     title       varchar(255) NOT NULL,
     description TEXT,
     status      integer      NOT NULL REFERENCES todoit.task_status (id),
-    colors      varchar(7)
+    color       varchar(7)
 );
 
+CREATE INDEX IF NOT EXISTS task_search_idx ON todoit.task(status, planned); -- Под постраничный поисковый запрос
 CREATE INDEX IF NOT EXISTS task_status_idx ON todoit.task(status);
 CREATE INDEX IF NOT EXISTS task_planned_idx ON todoit.task(planned DESC);
 CREATE INDEX IF NOT EXISTS task_created_idx ON todoit.task(created DESC);
@@ -61,7 +62,7 @@ comment on column todoit.task.planned is 'Дата, на которую зада
 comment on column todoit.task.title is 'Заголовок задачи';
 comment on column todoit.task.description is 'Текст задачи';
 comment on column todoit.task.status is 'Статус задачи';
-comment on column todoit.task.colors is 'Цвет задачи';
+comment on column todoit.task.color is 'Цвет задачи';
 
 
 --------------------------------

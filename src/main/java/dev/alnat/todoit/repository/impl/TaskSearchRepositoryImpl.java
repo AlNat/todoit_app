@@ -30,18 +30,22 @@ public class TaskSearchRepositoryImpl implements TaskSearchRepository {
 
     @PersistenceContext
     private final EntityManager em;
+    private final List<TaskStatus> hideStatusList;
 
     @Override
     public List<Task> findByParam(final TaskSearchRequest filter) {
-        CriteriaBuilder cb = em.getCriteriaBuilder();
+        final CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Task> criteriaQuery = cb.createQuery(Task.class);
-        Root<Task> root = criteriaQuery.from(Task.class); // Откуда будут браться данные
-        List<Predicate> conditions = new ArrayList<>(); // Набор условий
-        List<Order> orderList = new ArrayList<>(); // Набор для сортировки
+        final Root<Task> root = criteriaQuery.from(Task.class); // Откуда будут браться данные
+        final List<Predicate> conditions = new ArrayList<>(); // Набор условий
+        final List<Order> orderList = new ArrayList<>(); // Набор для сортировки
+
+        // Принудительно скрываем статусы которые не нужно показывать
+        conditions.add(cb.not(root.<TaskStatus>get("status").in(hideStatusList)));
 
         // Статус задачи
         if (filter.getStatusList() != null) {
-            conditions.add((root.<TaskStatus>get("status").in(filter.getStatusList())));
+            conditions.add(root.<TaskStatus>get("status").in(filter.getStatusList()));
         }
 
         // Дата начала выборки
@@ -61,7 +65,7 @@ public class TaskSearchRepositoryImpl implements TaskSearchRepository {
                 if (!StringUtils.hasText(sorting.getSortBy())) {
                     continue;
                 }
-                Expression<?> orderExpression = root.get(sorting.getSortBy());
+                final Expression<?> orderExpression = root.get(sorting.getSortBy());
 
                 // По-умолчания по возрастанию
                 if (sorting.getSortOrder() == null || sorting.getSortOrder() == Sorting.SortOrder.ASC) {
@@ -76,7 +80,6 @@ public class TaskSearchRepositoryImpl implements TaskSearchRepository {
             // По умолчанию сортируем по планируемой дате
             orderList.add(cb.asc(root.get(PLANNED)));
         }
-
 
         criteriaQuery = criteriaQuery
                 .where(cb.and(conditions.toArray(new Predicate[0])))
