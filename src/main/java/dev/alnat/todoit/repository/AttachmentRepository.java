@@ -17,7 +17,7 @@ public interface AttachmentRepository extends JpaRepository<Attachment, Long> {
 
     /**
      * Превью вложений (без БД)
-     * @param task задача
+     * @param task задачи
      * @return список ее вложений в виде прьвью
      */
     @Query("SELECT new Attachment(a.id, a.created, a.size, a.name) FROM Attachment a where a.task = :task")

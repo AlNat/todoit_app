@@ -1,10 +1,8 @@
 package dev.alnat.todoit.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -18,28 +16,35 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true)
 @Table(name = "attachment", schema = "todoit")
 public class Attachment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
+    @ToString.Include
     private Long id;
 
     @Column(updatable = false, nullable = false)
     @CreationTimestamp
+    @ToString.Include
     private LocalDateTime created;
 
     @Lob
-    @Column(columnDefinition = "blob", updatable = false, nullable = false)
+    @Type(type="org.hibernate.type.BinaryType")
+    @Column(columnDefinition = "bytea", updatable = false, nullable = false)
     private byte[] data;
 
+    @ToString.Include
     @Column(updatable = false, nullable = false)
     private Long size;
 
+    @ToString.Include
     @Column(updatable = false, nullable = false)
     private String name;
 
+    @ToString.Include
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(nullable = false)
     private Task task;
