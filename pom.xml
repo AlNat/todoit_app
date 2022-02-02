@@ -22,11 +22,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <todoit-types.version>1.0.0</todoit-types.version>
+        <todoit-types.version>1.0.1</todoit-types.version>
 
         <spring.boot.version>2.5.8</spring.boot.version>
         <spring-cloud.version>2020.0.5</spring-cloud.version>
-        <spring-docs.version>1.5.7</spring-docs.version>
+        <spring-docs.version>1.6.5</spring-docs.version>
 
         <lombok.version>1.18.22</lombok.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
@@ -40,6 +40,12 @@
             <groupId>dev.alnat.todoit</groupId>
             <artifactId>types</artifactId>
             <version>${todoit-types.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.swagger.core.v3</groupId>
+                    <artifactId>swagger-annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>

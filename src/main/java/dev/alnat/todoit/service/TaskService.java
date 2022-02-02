@@ -10,6 +10,7 @@ import dev.alnat.todoit.types.TaskDTO;
 import dev.alnat.todoit.util.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -39,7 +41,13 @@ public class TaskService {
     }
 
     public TaskSearchResponse getPaging(TaskSearchRequest request) {
-        var entityList = taskRepository.findByParam(request);
+        List<Task> entityList;
+        try {
+            entityList = taskRepository.findByParam(request);
+        } catch (InvalidDataAccessApiUsageException e) {
+            log.error("Paging sorting invalid", e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid search request " + request);
+        }
 
         var list = taskMapper.entityToDTO(entityList);
 
@@ -93,6 +101,12 @@ public class TaskService {
         Task newTask = taskMapper.dtoToEntity(dto);
         newTask.setId(id);
         taskRepository.save(newTask);
+    }
+
+    public void updateStatus(Long id, TaskStatus status) {
+        Task task = fetchOrThrow(id);
+        task.setStatus(status);
+        taskRepository.save(task);
     }
 
     private Task fetchOrThrow(Long id) throws ResponseStatusException {
