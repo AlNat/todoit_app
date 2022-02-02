@@ -44,7 +44,7 @@ public class TaskSearchRepositoryImpl implements TaskSearchRepository {
         conditions.add(cb.not(root.<TaskStatus>get("status").in(hideStatusList)));
 
         // Статус задачи
-        if (filter.getStatusList() != null) {
+        if (filter.getStatusList() != null && !filter.getStatusList().isEmpty()) {
             conditions.add(root.<TaskStatus>get("status").in(filter.getStatusList()));
         }
 

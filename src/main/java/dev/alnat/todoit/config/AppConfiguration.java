@@ -21,7 +21,7 @@ public class AppConfiguration {
      */
     @Bean
     public List<TaskStatus> hideStatusList() {
-        return Arrays.stream(TaskStatus.values()).filter(t -> !t.isHide()).toList();
+        return Arrays.stream(TaskStatus.values()).filter(TaskStatus::isHide).toList();
     }
 
 }
