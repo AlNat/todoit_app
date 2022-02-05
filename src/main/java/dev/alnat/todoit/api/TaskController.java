@@ -96,9 +96,9 @@ public class TaskController {
     })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/")
-    public void save(@io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, description = "DTO задачи")
+    public TaskDTO save(@io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, description = "DTO задачи")
                      @RequestBody TaskDTO dto) {
-        service.save(dto);
+        return service.save(dto);
     }
 
     @Operation(summary = "Удаление задачи по идентификатору")

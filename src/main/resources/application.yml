@@ -37,7 +37,6 @@ spring:
   flyway:
     enabled: true
     validate-on-migrate: true
-    check-location: true
     locations: classpath:/db/todoit
     schemas: todoit
     baseline-on-migrate: true
@@ -62,7 +61,7 @@ spring:
 
 springdoc:
   swagger-ui:
-    # Sort docs in alpha order
+    # Сортируем API в алфавитном порядке
     operations-sorter: alpha
     tags-sorter: alpha
     disable-swagger-default-url: true
