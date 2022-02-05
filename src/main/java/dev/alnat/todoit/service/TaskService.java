@@ -80,9 +80,10 @@ public class TaskService {
         return Optional.of(taskMapper.entityToDTO(taskOpt.get()));
     }
 
-    public void save(TaskDTO dto) {
+    public TaskDTO save(TaskDTO dto) {
         Task newTask = taskMapper.dtoToEntity(dto);
-        taskRepository.save(newTask);
+        newTask = taskRepository.save(newTask);
+        return taskMapper.entityToDTO(newTask);
     }
 
     @Transactional
