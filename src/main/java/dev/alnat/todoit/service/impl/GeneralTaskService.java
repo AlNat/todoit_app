@@ -106,12 +106,13 @@ public class GeneralTaskService implements TaskService {
 
     @Override
     @Transactional
-    public void update(Long id, TaskDTO dto) {
+    public TaskDTO update(Long id, TaskDTO dto) {
         fetchOrThrow(id); // Проверяем на обновление удаленной задачи
 
         Task newTask = taskMapper.dtoToEntity(dto);
         newTask.setId(id);
-        taskRepository.save(newTask);
+        var savedTask = taskRepository.save(newTask);
+        return taskMapper.entityToDTO(savedTask);
     }
 
     @Override

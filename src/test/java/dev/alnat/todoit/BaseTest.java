@@ -7,11 +7,13 @@ import dev.alnat.todoit.repository.TaskRepository;
 import dev.alnat.todoit.search.TaskSearchRequest;
 import dev.alnat.todoit.search.TaskSearchResponse;
 import dev.alnat.todoit.tools.TestUtils;
+import dev.alnat.todoit.types.AttachmentPreview;
 import dev.alnat.todoit.types.TaskDTO;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.util.LinkedMultiValueMap;
@@ -20,6 +22,8 @@ import org.springframework.util.MultiValueMap;
 import javax.transaction.Transactional;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -32,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Created by @author AlNat on 16.01.2022.
  * Licensed by Apache License, Version 2.0
  */
-@SuppressWarnings({"SameParameterValue", "unused"})
+@SuppressWarnings({"SameParameterValue", "unused", "UnusedReturnValue"})
 public abstract class BaseTest {
 
     static {
@@ -132,9 +136,54 @@ public abstract class BaseTest {
     // API для вложений //
     //////////////////////
 
-    // TODO Получить список вложений
-    // TODO Сохранить вложение
-    // TODO Скачать вложение
+    @SneakyThrows
+    protected byte[] getAttachment(Long id) {
+        return this.mvc.perform(get("/api/v1/attachment/" + id))
+                .andDo(print())
+                .andExpect(status().is2xxSuccessful())
+                .andReturn()
+                .getResponse().getContentAsByteArray();
+    }
+
+    @SneakyThrows
+    protected List<AttachmentPreview> getAttachmentsByTask(Long taskId) {
+        var params = new LinkedMultiValueMap<String, String>();
+        params.add("taskId", taskId.toString());
+
+        String response = getSyncResponseToGET("/api/v1/attachment/", params);
+
+        try {
+            return Arrays.asList(mapper.readValue(response, AttachmentPreview[].class));
+        } catch (Exception e) {
+            Assertions.fail(e);
+            return null;
+        }
+    }
+
+    @SneakyThrows
+    protected AttachmentPreview uploadAttachment(String fileName, byte[] data, Long taskId) {
+        MockMultipartFile mockMultipartFile = new MockMultipartFile("file", fileName, "text/plain", data);
+
+        var response = this.mvc.perform(multipart("/api/v1/attachment/")
+                        .file(mockMultipartFile)
+                        .param("taskId", taskId.toString())
+                )
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        try {
+            return mapper.readValue(response, AttachmentPreview.class);
+        } catch (Exception e) {
+            Assertions.fail(e);
+            return null;
+        }
+    }
+
+    @SneakyThrows
+    protected void deleteAttachment(Long id) {
+        getSyncResponseToDELETE("/api/v1/attachment/" + id);
+    }
 
     /////////////////////////
     // Набор общих методов //
@@ -151,7 +200,12 @@ public abstract class BaseTest {
 
     @SneakyThrows
     protected String getSyncResponseToGET(String url) {
-        return this.mvc.perform(get(url))
+        return getSyncResponseToGET(url, new LinkedMultiValueMap<>());
+    }
+
+    @SneakyThrows
+    protected String getSyncResponseToGET(String url, MultiValueMap<String, String> params) {
+        return this.mvc.perform(get(url).params(params))
                 .andDo(print())
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))

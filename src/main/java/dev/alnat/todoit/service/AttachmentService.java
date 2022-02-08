@@ -13,10 +13,12 @@ import java.util.Optional;
  */
 public interface AttachmentService {
 
-    Optional<FileDTO> fetchAttachmentById(Long id);
+    Optional<FileDTO> fetchById(Long id);
 
-    void saveAttachmentToTask(MultipartFile file, Long taskId);
+    AttachmentPreview saveAttachmentToTask(MultipartFile file, Long taskId);
 
     List<AttachmentPreview> fetchAttachmentPreviewByTask(Long taskId);
+
+    void delete(Long id);
 
 }

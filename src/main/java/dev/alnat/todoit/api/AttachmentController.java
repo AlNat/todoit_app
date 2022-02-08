@@ -48,7 +48,7 @@ public class AttachmentController {
 
     @Operation(summary = "Получения тела вложений по id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Сохранение выполнено успешно"),
+            @ApiResponse(responseCode = "200", description = "Получение выполнено успешно"),
             @ApiResponse(responseCode = "400", description = "Некорректный запрос", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "404", description = "Не найдено вложение", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера", content = @Content(schema = @Schema(type = "string")))
@@ -56,7 +56,7 @@ public class AttachmentController {
     @GetMapping("/{attachmentId}")
     public ResponseEntity<byte[]> fetchAttachmentById(@Parameter(description = "Id вложения", example = "123", in = ParameterIn.PATH)
                                                       @PathVariable Long attachmentId) {
-        var fileDTOOpt = service.fetchAttachmentById(attachmentId);
+        var fileDTOOpt = service.fetchById(attachmentId);
 
         if (fileDTOOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found attachment with id " + attachmentId);
@@ -69,7 +69,7 @@ public class AttachmentController {
 
     @Operation(summary = "Сохранение нового вложения к задаче")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Сохранение выполнено успешно"),
+            @ApiResponse(responseCode = "201", description = "Сохранение выполнено успешно, созданный объект в теле ответа"),
             @ApiResponse(responseCode = "400", description = "Некорректный запрос", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "404", description = "Не найдена задача", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "422", description = "Вложение не может быть получено", content = @Content(schema = @Schema(type = "string"))),
@@ -77,11 +77,25 @@ public class AttachmentController {
     })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(value="/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void saveAttachmentToTask(@Parameter(description = "Файл") // , schema = @Schema(type = "string", format = "binary")
+    public AttachmentPreview saveAttachmentToTask(@Parameter(description = "Файл") // , schema = @Schema(type = "string", format = "binary")
                                      @RequestParam(value = "file") MultipartFile file,
                                      @Parameter(description = "Id задачи", example = "1", in = ParameterIn.QUERY)
                                      @RequestParam("taskId") Long taskId) {
-        service.saveAttachmentToTask(file, taskId);
+        return service.saveAttachmentToTask(file, taskId);
+    }
+
+    @Operation(summary = "Удаление вложения по идентификатору")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Удаление произведено"),
+            @ApiResponse(responseCode = "400", description = "Некорректный запрос", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "404", description = "Вложение не найдена", content = @Content(schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера", content = @Content(schema = @Schema(type = "string")))
+    })
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @DeleteMapping("/{id}")
+    public void delete(@Parameter(description = "Идентификатор вложения", required = true, in = ParameterIn.PATH, example = "1")
+                       @PathVariable Long id) {
+        service.delete(id);
     }
 
 }

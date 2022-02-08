@@ -1,13 +1,21 @@
 package dev.alnat.todoit;
 
+import dev.alnat.todoit.common.Sorting;
 import dev.alnat.todoit.configuration.PostgreSQLTestContainerConfiguration;
 import dev.alnat.todoit.tools.TaskUtils;
+import dev.alnat.todoit.tools.TestUtils;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.util.LinkedMultiValueMap;
+
+import java.util.stream.Stream;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -128,6 +136,53 @@ class TaskAPIFailuresTest extends BaseTest {
         }
 
         Assertions.assertNotNull(responseBody, "Текст ошибки не передан!");
+    }
+
+    // Некорректные параметры лимита и offset-а
+    private static Stream<Arguments> dataIncorrectLimitAndOffset() {
+        return Stream.of(
+                Arguments.of(-1, -1),
+                Arguments.of(-1, 0),
+                Arguments.of(0, -1),
+                Arguments.of(0, 0),
+                Arguments.of(101, 0)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataIncorrectLimitAndOffset")
+    @DisplayName("Проверка некорректных limit и offset")
+    void testIncorrectLimitAndOffset(Integer limit, Integer offset) throws Exception {
+        var params = new LinkedMultiValueMap<String, String>();
+        params.add("limit", limit.toString());
+        params.add("offset", offset.toString());
+
+        this.mvc.perform(get("/api/v1/task/").params(params))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn();
+    }
+
+
+    // Некорректные параметры сортировки
+    private static Stream<Arguments> dataIncorrectSorting() {
+        return Stream.of(
+                Arguments.of(100, 0, new Sorting[]{Sorting.of("created"), Sorting.of("created"), Sorting.of("created"), Sorting.of("created"), Sorting.of("created"), Sorting.of("created")}),
+                Arguments.of(100, 0, new Sorting[]{Sorting.builder().sortOrder(Sorting.SortOrder.DESC).build()})
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("dataIncorrectSorting")
+    @DisplayName("Проверка некорректной сортировки")
+    void testIncorrectSorting(int limit, int offset, Sorting... sorting) throws Exception {
+        var req = TaskUtils.generateTaskSearch(limit, offset, sorting);
+        var params = TestUtils.objectToMap(req);
+
+        this.mvc.perform(get("/api/v1/task/").params(params))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andReturn();
     }
 
 }
