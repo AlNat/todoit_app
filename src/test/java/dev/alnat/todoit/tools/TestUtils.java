@@ -51,7 +51,7 @@ public final class TestUtils {
                     }
                 } else { // Иначе это вложенный объект и нужно передать в параметрах его индекс через obj[i].filed
                     for (int i = 0; i < nestedCollection.size(); i++) {
-                        objectToMap(nestedCollection.iterator().next(), e.getKey() + "%5B" + i + "%5D", linkedMultiValueMap);
+                        objectToMap(nestedCollection.iterator().next(), e.getKey() + "[" + i + "]", linkedMultiValueMap);
                     }
                 }
                 continue;

@@ -1,5 +1,6 @@
 package dev.alnat.todoit.tools;
 
+import dev.alnat.todoit.common.Sorting;
 import dev.alnat.todoit.enums.TaskStatus;
 import dev.alnat.todoit.search.TaskSearchRequest;
 import dev.alnat.todoit.types.TaskDTO;
@@ -14,6 +15,7 @@ import java.util.Collections;
  * Created by @author AlNat on 04.02.2022.
  * Licensed by Apache License, Version 2.0
  */
+@SuppressWarnings("unused")
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TaskUtils {
 
@@ -56,6 +58,21 @@ public final class TaskUtils {
     public static TaskSearchRequest generateTaskSearch() {
         return TaskSearchRequest.builder().build();
     }
+
+    public static TaskSearchRequest generateTaskSearch(Sorting... sorting) {
+        return TaskSearchRequest.builder()
+                .sorting(Arrays.asList(sorting))
+                .build();
+    }
+
+    public static TaskSearchRequest generateTaskSearch(int limit, int offset, Sorting... sorting) {
+        return TaskSearchRequest.builder()
+                .limit(limit)
+                .offset(offset)
+                .sorting(Arrays.asList(sorting))
+                .build();
+    }
+
 
     public static TaskSearchRequest generateTaskSearch(TaskStatus status) {
         return TaskSearchRequest.builder()

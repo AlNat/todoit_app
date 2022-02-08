@@ -26,7 +26,7 @@ public interface TaskService {
 
     void delete(Long id);
 
-    void update(Long id, TaskDTO dto);
+    TaskDTO update(Long id, TaskDTO dto);
 
     void updateStatus(Long id, TaskStatus status);
 

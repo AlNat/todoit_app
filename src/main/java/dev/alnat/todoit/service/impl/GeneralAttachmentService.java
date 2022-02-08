@@ -1,5 +1,6 @@
 package dev.alnat.todoit.service.impl;
 
+import dev.alnat.todoit.enums.TaskStatus;
 import dev.alnat.todoit.mapper.AttachmentPreviewMapper;
 import dev.alnat.todoit.model.Attachment;
 import dev.alnat.todoit.model.Task;
@@ -34,7 +35,7 @@ public class GeneralAttachmentService implements AttachmentService {
     private final AttachmentPreviewMapper previewMapper;
 
     @Override
-    public Optional<FileDTO> fetchAttachmentById(Long id) {
+    public Optional<FileDTO> fetchById(Long id) {
         var attachOpt = attachmentRepository.findById(id);
 
         log.debug("By id {} {} attachment", id, attachOpt.isEmpty() ? "not found" : "found");
@@ -48,7 +49,7 @@ public class GeneralAttachmentService implements AttachmentService {
 
     @Override
     @Transactional
-    public void saveAttachmentToTask(MultipartFile file, Long taskId) {
+    public AttachmentPreview saveAttachmentToTask(MultipartFile file, Long taskId) {
         var task = fetchTaskOrThrow(taskId);
 
         byte[] data;
@@ -65,8 +66,9 @@ public class GeneralAttachmentService implements AttachmentService {
         attach.setName(file.getOriginalFilename());
         attach.setSize(file.getSize());
 
-        attachmentRepository.save(attach);
+        var savedAttachment = attachmentRepository.save(attach);
         log.debug("Save attachment {}", attach);
+        return previewMapper.entityToDTO(savedAttachment);
     }
 
     @Override
@@ -75,6 +77,18 @@ public class GeneralAttachmentService implements AttachmentService {
         return previewMapper.entityToDTO(attachmentRepository.getPreviewByTask(task));
     }
 
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        var attachment = attachmentRepository.findById(id);
+
+        if (attachment.isEmpty()) {
+            log.warn("Not found attachment {} on deleting", id);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found task " + id);
+        }
+
+        attachmentRepository.delete(attachment.get());
+    }
 
     /**
      * Проверка наличия задачи или то что она в скрытом статусе
@@ -82,7 +96,7 @@ public class GeneralAttachmentService implements AttachmentService {
     private Task fetchTaskOrThrow(Long id) {
         Optional<Task> task = taskRepository.findById(id);
         if (task.isEmpty() || task.get().getStatus().isHide()) {
-            log.warn("Not found task {} on saving attachment", id);
+            log.warn("Not found task {} on processing attachment", id);
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found task " + id);
         }
 

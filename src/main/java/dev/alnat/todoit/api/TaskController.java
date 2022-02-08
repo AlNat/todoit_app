@@ -19,6 +19,7 @@ import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.server.ResponseStatusException;
@@ -33,6 +34,7 @@ import static org.springframework.http.HttpStatus.REQUEST_TIMEOUT;
  * Created by @author AlNat on 23.01.2022.
  * Licensed by Apache License, Version 2.0
  */
+@Validated
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -49,7 +51,7 @@ public class TaskController {
             description = "Через Swagger нельзя отобразить сортировку, их нужно передавать через массив," +
                     "формата sorting[0].sortBy=field1")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Поиск произведен"),
+            @ApiResponse(responseCode = "200", description = "Поиск произведен, результат в теле ответа"),
             @ApiResponse(responseCode = "400", description = "Некорректный запрос", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "408", description = "Поиск превысил время ожидания", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера", content = @Content(schema = @Schema(type = "string")))
@@ -64,7 +66,7 @@ public class TaskController {
             throw new ResponseStatusException(REQUEST_TIMEOUT);
         });
 
-        deferredResult.onError((throwable) -> {
+        deferredResult.onError(throwable -> {
             log.error("Exception at differed result", throwable);
             throw new ResponseStatusException(INTERNAL_SERVER_ERROR);
         });
@@ -77,7 +79,7 @@ public class TaskController {
 
     @Operation(summary = "Поиск задачи по идентификатору")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Поиск произведен"),
+            @ApiResponse(responseCode = "200", description = "Поиск произведен, объект в теле ответа"),
             @ApiResponse(responseCode = "400", description = "Некорректный запрос", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "404", description = "Задача не найдена", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера", content = @Content(schema = @Schema(type = "string")))
@@ -90,7 +92,7 @@ public class TaskController {
 
     @Operation(summary = "Сохранение новой задачи")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Поиск произведен"),
+            @ApiResponse(responseCode = "201", description = "Сохранение успешно произведен, новый объект в теле ответа"),
             @ApiResponse(responseCode = "400", description = "Некорректный запрос", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера", content = @Content(schema = @Schema(type = "string")))
     })
@@ -117,18 +119,18 @@ public class TaskController {
 
     @Operation(summary = "Обновление задачи по идентификатору")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "202", description = "Обновление произведено"),
+            @ApiResponse(responseCode = "202", description = "Обновление произведено, обновленный объект в теле ответа"),
             @ApiResponse(responseCode = "400", description = "Некорректный запрос", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "404", description = "Задача не найдена", content = @Content(schema = @Schema(type = "string"))),
             @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера", content = @Content(schema = @Schema(type = "string")))
     })
     @ResponseStatus(HttpStatus.ACCEPTED)
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void update(@Parameter(description = "Идентификатор задачи", required = true, in = ParameterIn.PATH, example = "1")
+    public TaskDTO update(@Parameter(description = "Идентификатор задачи", required = true, in = ParameterIn.PATH, example = "1")
                        @PathVariable Long id,
                        @io.swagger.v3.oas.annotations.parameters.RequestBody(required = true, description = "DTO задачи")
                        @RequestBody TaskDTO dto) {
-        service.update(id, dto);
+        return service.update(id, dto);
     }
 
     @Operation(summary = "Обновление статуса задачи по идентификатору")

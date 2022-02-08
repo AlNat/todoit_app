@@ -2,10 +2,7 @@ package dev.alnat.todoit.model;
 
 import dev.alnat.todoit.enums.TaskStatus;
 import dev.alnat.todoit.model.converter.TaskStatusConverter;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.*;
 
 import javax.persistence.*;
@@ -66,6 +63,7 @@ public class Task {
     @Column(columnDefinition = "varchar(7)")
     private String color;
 
+    @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "task", cascade = CascadeType.ALL)
     @Fetch(FetchMode.SELECT)
     private List<Attachment> attachmentList;
