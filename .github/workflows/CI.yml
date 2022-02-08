@@ -23,3 +23,6 @@ jobs:
 
     - name: Build with Maven
       run: mvn -s $GITHUB_WORKSPACE/.github/workflows/github-maven-settings.xml clean package --file pom.xml
+      env:
+        USER_NAME: ${{ secrets.USER_NAME }}
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
